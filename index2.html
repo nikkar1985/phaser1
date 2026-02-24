@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <title>Phaser Simple Game - Maximus</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #222; }
+    </style>
+</head>
+<body>
+
+  <script>
+  const config = {
+          type: Phaser.AUTO,
+          width: 800,
+          height: 600,
+          backgroundColor: '#1d1d1d',
+          physics: {
+              default: 'arcade',
+              arcade: {
+                  gravity: { y: 0 },
+                  debug: false
+              }
+          },
+          scene: {
+              preload: preload,
+              create: create,
+              update: update
+          }
+      };
+
+      const game = new Phaser.Game(config);
+
+      let player;
+      let cursors;
+      let star;
+      let score = 0;
+      let scoreText;
+      let emitter;
+
+      function preload() {
+          this.load.image('ship', 'https://labs.phaser.io/assets/sprites/phaser-ship.png');
+          this.load.image('target', 'https://labs.phaser.io/assets/sprites/aqua_ball.png');
+          this.load.image('particle', 'https://labs.phaser.io/assets/particles/green-flare.png');
+      }
+
+      function create() {
+          this.add.grid(400, 300, 800, 600, 40, 40, 0x00ff00, 0.05);
+
+          const particles = this.add.particles(0, 0, 'particle', {
+              speed: 100,
+              scale: { start: 0.4, end: 0 },
+              blendMode: 'ADD',
+              lifespan: 500,
+              emitting: false 
+          });
+
+          emitter = particles;
+
+          player = this.physics.add.sprite(400, 300, 'ship');
+          player.setCollideWorldBounds(true);
+
+          player.setDrag(1000);
+          player.setMaxVelocity(400);
+
+          star = this.physics.add.sprite(600, 400, 'target');
+
+          scoreText = this.add.text(20, 40, 'Score: 0', { fontSize: '20px', fill: '#ffffff' });
+
+          this.physics.add.overlap(player, star, collectStar, null, this);
+
+          cursors = this.input.keyboard.createCursorKeys();
+
+          this.add.text(10, 10, 'Κινήσου με τα βέλη!', { fill: '#ffff00' });
+      }
+
+      function update() {
+          const speed = 300;
+
+          if (cursors.left.isDown) {
+              player.setVelocityX(-speed);
+              player.setFlipX(true);
+          } else if (cursors.right.isDown) {
+              player.setVelocityX(speed);
+              player.setFlipX(false);
+          } else {
+              player.setVelocityX(0);
+          }
+
+          if (cursors.up.isDown) {
+              player.setVelocityY(-speed);
+          } else if (cursors.down.isDown) {
+              player.setVelocityY(speed);
+          } else {
+              player.setVelocityY(0);
+          }
+      }
+
+      function collectStar(player, star) {
+          emitter.emitParticleAt(star.x, star.y, 15);
+
+          score += 10;
+          scoreText.setText('Score: ' + score);
+
+          const newX = Phaser.Math.Between(50, 750);
+          const newY = Phaser.Math.Between(50, 550);
+
+          star.setPosition(newX, newY);
+      }
+    </script>
+
+</body>
+</html>
