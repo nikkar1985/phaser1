@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <title>Phaser Simple Game - Maximus</title>
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser-arcade-physics.min.js"></script>
+    <style>
+        body { margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; background: #222; }
+    </style>
+</head>
+<body>
+
+<script>
+class StartScene extends Phaser.Scene {
+    constructor() {
+        super('StartScene');
+    }
+
+    preload() {
+        this.load.image('bg', 'https://labs.phaser.io/assets/skies/space3.png');
+    }
+
+    create() {
+        this.add.image(400, 300, 'bg');
+
+        this.add.text(400, 200, 'ΔΙΑΣΤΗΜΙΚΗ ΑΠΟΣΤΟΛΗ', { fontSize: '32px', fill: '#fff' }).setOrigin(0.5);
+
+        const startBtn = this.add.text(400, 400, 'ΕΝΑΡΞΗ', { fontSize: '24px', fill: '#0f0', backgroundColor: '#333', padding: 10 })
+            .setOrigin(0.5)
+            .setInteractive({ useHandCursor: true });
+
+        startBtn.on('pointerdown', () => {
+            this.scene.start('PlayScene');
+        });
+    }
+}
+
+class PlayScene extends Phaser.Scene {
+    constructor() {
+        super('PlayScene');
+    }
+
+    preload() {
+        this.load.image('ship', 'https://labs.phaser.io/assets/sprites/phaser-ship.png');
+        this.load.image('target', 'https://labs.phaser.io/assets/sprites/aqua_ball.png');
+    }
+
+    create() {
+        this.score = 0;
+        this.speed = 300;
+
+        this.scoreText = this.add.text(20, 20, 'Score: 0', { fontSize: '20px', fill: '#fff' });
+
+        this.player = this.physics.add.sprite(400, 300, 'ship');
+        this.player.setCollideWorldBounds(true);
+        this.player.setDrag(1000);
+
+        this.star = this.physics.add.sprite(600, 400, 'target');
+
+        this.physics.add.overlap(this.player, this.star, this.collectStar, null, this);
+
+        this.cursors = this.input.keyboard.createCursorKeys();
+    }
+
+    update() {
+
+        if (this.cursors.left.isDown) {
+            this.player.setVelocityX(-this.speed);
+            this.player.setFlipX(true);
+        } else if (this.cursors.right.isDown) {
+            this.player.setVelocityX(this.speed);
+            this.player.setFlipX(false);
+        } else {
+            this.player.setVelocityX(0);
+        }
+
+
+        if (this.cursors.up.isDown) {
+            this.player.setVelocityY(-this.speed);
+        } else if (this.cursors.down.isDown) {
+            this.player.setVelocityY(this.speed);
+        } else {
+            this.player.setVelocityY(0);
+        }
+    }
+
+    collectStar(player, star) {
+        this.score += 10;
+        this.scoreText.setText('Score: ' + this.score);
+
+        
+        const newX = Phaser.Math.Between(50, 750);
+        const newY = Phaser.Math.Between(50, 550);
+        star.setPosition(newX, newY);
+    }
+}
+
+const config = {
+    type: Phaser.AUTO,
+    width: 800,
+    height: 600,
+    backgroundColor: '#1d1d1d',
+    physics: {
+        default: 'arcade',
+        arcade: {
+            gravity: { y: 0 },
+            debug: false
+        }
+    },
+    scene: [StartScene, PlayScene]
+};
+
+const game = new Phaser.Game(config);
+</script>
+
+</body>
+</html>
